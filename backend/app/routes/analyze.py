@@ -7,16 +7,18 @@ router = APIRouter()
 
 github_client = GitHubClient()
 
+
 @router.post("/analyze-repo")
 def analyze_repository(request: RepoRequest):
 
     owner, repo = parse_repo_url(request.repo_url)
 
-    result = github_client.test_connection(owner, repo)
+    commits = github_client.get_commits(owner, repo)
 
     return {
         "repository": request.repo_url,
-        "parsed_owner": owner,
-        "parsed_repo": repo,
-        "status": result["status"]
+        "owner": owner,
+        "repo": repo,
+        "total_commits_fetched": len(commits),
+        "commits": commits
     }
