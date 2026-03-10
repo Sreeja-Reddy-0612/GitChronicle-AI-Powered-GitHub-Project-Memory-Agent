@@ -1,72 +1,36 @@
 import requests
-from app.config import GITHUB_TOKEN, GITHUB_API_BASE
+import os
 
 
 class GitHubClient:
 
     def __init__(self):
-        self.base_url = GITHUB_API_BASE
+
+        token = os.getenv("GITHUB_TOKEN")
+
         self.headers = {
-            "Authorization": f"token {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github.v3+json"
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github+json"
         }
 
-    def get_commits(self, owner: str, repo: str, per_page: int = 30):
-        """
-        Fetch commit history from GitHub repository
-        """
+    def get_commits(self, owner, repo):
 
-        url = f"{self.base_url}/repos/{owner}/{repo}/commits"
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits?per_page=10"
 
-        params = {
-            "per_page": per_page
-        }
-
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, timeout=10)
 
         if response.status_code != 200:
             raise Exception(f"GitHub API error: {response.text}")
 
-        commits = response.json()
+        return response.json()
 
-        processed_commits = []
+    def get_commit_details(self, owner, repo, sha):
 
-        for commit in commits:
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits/{sha}"
 
-            processed_commits.append({
-                "sha": commit["sha"],
-                "message": commit["commit"]["message"],
-                "author": commit["commit"]["author"]["name"],
-                "date": commit["commit"]["author"]["date"],
-                "url": commit["html_url"]
-            })
-
-        return processed_commits
-
-    def get_commit_details(self, owner: str, repo: str, sha: str):
-        """
-        Fetch file-level changes for a specific commit
-        """
-
-        url = f"{self.base_url}/repos/{owner}/{repo}/commits/{sha}"
-
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(url, headers=self.headers, timeout=10)
 
         if response.status_code != 200:
-            return []
+            raise Exception(f"GitHub API error: {response.text}")
 
-        data = response.json()
-
-        files = data.get("files", [])
-
-        file_changes = []
-
-        for file in files:
-            file_changes.append({
-                "filename": file.get("filename"),
-                "additions": file.get("additions", 0),
-                "deletions": file.get("deletions", 0),
-                "changes": file.get("changes", 0)
-            })
-
-        return file_changes
+        return response.json()

@@ -1,23 +1,33 @@
-from typing import List
-from app.models.commit_model import Commit
-from app.services.github_client import GitHubClient
-
-
 class FileChangeAnalyzer:
 
-    def __init__(self):
-        self.github_client = GitHubClient()
+    def __init__(self, github_client):
+        self.github_client = github_client
 
-    def enrich_commits_with_files(self, owner: str, repo: str, commits: List[Commit]):
+    def enrich_commits(self, owner, repo, commits):
+
+        enriched = []
 
         for commit in commits:
 
-            files = self.github_client.get_commit_details(
-                owner,
-                repo,
-                commit.sha
-            )
+            sha = commit["sha"]
 
-            commit.files = files
+            details = self.github_client.get_commit_details(owner, repo, sha)
 
-        return commits
+            files = []
+
+            if "files" in details:
+
+                for file in details["files"]:
+
+                    files.append({
+                        "filename": file.get("filename"),
+                        "additions": file.get("additions"),
+                        "deletions": file.get("deletions"),
+                        "changes": file.get("changes")
+                    })
+
+            commit["files"] = files
+
+            enriched.append(commit)
+
+        return enriched
