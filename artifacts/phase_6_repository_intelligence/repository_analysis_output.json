@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/Sreeja-Reddy-0612/enterprise-compliance-graphrag",
+  "owner": "Sreeja-Reddy-0612",
+  "repo": "enterprise-compliance-graphrag",
+  "total_commits": 9,
+  "commits": [],
+  "insights": {
+    "most_active_developer": "Sreeja-Reddy-0612",
+    "developer_commit_counts": {
+      "Sreeja-Reddy-0612": 9
+    },
+    "commit_type_distribution": {
+      "feature": 4,
+      "other": 5
+    },
+    "most_modified_files": [
+      {
+        "filename": "frontend/package-lock.json",
+        "changes": 2920
+      }
+    ]
+  }
+}

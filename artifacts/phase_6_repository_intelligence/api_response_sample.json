@@ -1,0 +1,15 @@
+{
+  "repository": "enterprise-compliance-graphrag",
+  "total_commits": 9,
+  "insights": {
+    "most_active_developer": "Sreeja-Reddy-0612",
+    "commit_type_distribution": {
+      "feature": 4,
+      "other": 5
+    },
+    "most_modified_files": [
+      "frontend/package-lock.json",
+      "frontend/src/App.jsx"
+    ]
+  }
+}
