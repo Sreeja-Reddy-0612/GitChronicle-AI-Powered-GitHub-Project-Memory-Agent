@@ -1,0 +1,14 @@
+{
+  "development_phases": [
+    {
+      "phase_number": 1,
+      "phase_name": "Feature Development",
+      "commit_count": 5
+    },
+    {
+      "phase_number": 2,
+      "phase_name": "Maintenance",
+      "commit_count": 1
+    }
+  ]
+}

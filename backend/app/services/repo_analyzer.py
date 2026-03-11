@@ -4,6 +4,7 @@ from app.services.commit_processor import CommitProcessor
 from app.services.file_change_analyzer import FileChangeAnalyzer
 from app.services.commit_classifier import CommitClassifier
 from app.services.repo_intelligence import RepoIntelligence
+from app.services.phase_builder import PhaseBuilder
 
 
 class RepoAnalyzer:
@@ -22,6 +23,8 @@ class RepoAnalyzer:
         self.commit_classifier = CommitClassifier()
 
         self.repo_intelligence = RepoIntelligence()
+
+        self.phase_builder = PhaseBuilder()
 
     def analyze_repository(self, repo_url):
 
@@ -46,11 +49,14 @@ class RepoAnalyzer:
         # Step 5: Generate repository insights
         insights = self.repo_intelligence.generate_insights(commits)
 
+        phases = self.phase_builder.build_phases(commits)
+
         return {
             "repository": repo_url,
             "owner": owner,
             "repo": repo,
             "total_commits": len(commits),
             "commits": commits,
-            "insights": insights
+            "insights": insights,
+            "development_phases": phases
         }
