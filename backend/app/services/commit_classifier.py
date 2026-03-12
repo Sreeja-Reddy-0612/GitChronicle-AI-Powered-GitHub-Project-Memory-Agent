@@ -1,24 +1,20 @@
+from app.services.semantic_commit_classifier import SemanticCommitClassifier
+
+
 class CommitClassifier:
+
+    def __init__(self):
+
+        self.semantic_classifier = SemanticCommitClassifier()
 
     def classify_commits(self, commits):
 
         for commit in commits:
 
-            message = commit["message"].lower()
+            message = commit["message"]
 
-            if "fix" in message or "bug" in message:
-                commit["type"] = "bugfix"
+            commit_type = self.semantic_classifier.classify(message)
 
-            elif "feat" in message or "add" in message:
-                commit["type"] = "feature"
-
-            elif "refactor" in message:
-                commit["type"] = "refactor"
-
-            elif "readme" in message or "docs" in message:
-                commit["type"] = "documentation"
-
-            else:
-                commit["type"] = "other"
+            commit["type"] = commit_type
 
         return commits
