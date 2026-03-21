@@ -2,10 +2,9 @@ from app.utils.repo_parser import parse_repo_url
 from app.services.github_client import GitHubClient
 from app.services.commit_processor import CommitProcessor
 from app.services.file_change_analyzer import FileChangeAnalyzer
-from app.services.commit_classifier import CommitClassifier
 from app.services.repo_intelligence import RepoIntelligence
 from app.services.phase_builder import PhaseBuilder
-
+from app.services.semantic_commit_classifier import SemanticCommitClassifier
 
 class RepoAnalyzer:
 
@@ -20,7 +19,7 @@ class RepoAnalyzer:
         # IMPORTANT FIX
         self.file_change_analyzer = FileChangeAnalyzer(self.github_client)
 
-        self.commit_classifier = CommitClassifier()
+        self.commit_classifier = SemanticCommitClassifier()
 
         self.repo_intelligence = RepoIntelligence()
 
