@@ -25,3 +25,7 @@ dist/
 
 # dotenv
 .env
+
+#frontend
+node_modules/
+dist/
