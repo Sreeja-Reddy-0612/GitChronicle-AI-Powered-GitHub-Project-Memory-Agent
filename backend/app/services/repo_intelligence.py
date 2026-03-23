@@ -14,13 +14,22 @@ class RepoIntelligence:
 
         for commit in commits:
 
-            author = commit.get("author", "unknown")
+            # 🔥 SAFE AUTHOR
+            author = commit.get("author")
+
+            if isinstance(author, dict):
+                author = author.get("name")
+
+            if not author:
+                author = "unknown"
+
             developer_activity[author] += 1
 
-            commit_type = commit.get("type", "other")
+            # 🔥 SAFE TYPE
+            commit_type = commit.get("type") or "other"
             commit_type_distribution[commit_type] += 1
 
-            files = commit.get("files", [])
+            files = commit.get("files") or []
 
             total_changes = 0
 
@@ -52,17 +61,12 @@ class RepoIntelligence:
         )[:5]
 
         return {
-
             "most_active_developer": most_active_developer,
-
             "developer_commit_counts": dict(developer_activity),
-
             "commit_type_distribution": dict(commit_type_distribution),
-
             "most_modified_files": [
                 {"filename": f, "changes": c}
                 for f, c in most_modified_files
             ],
-
             "largest_commit": largest_commit
         }

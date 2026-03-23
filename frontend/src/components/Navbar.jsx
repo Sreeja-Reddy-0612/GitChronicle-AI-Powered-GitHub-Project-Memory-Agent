@@ -12,6 +12,8 @@ export default function Navbar() {
         <Link to="/insights" style={styles.link}>Insights</Link>
         <Link to="/phases" style={styles.link}>Phases</Link>
         <Link to="/commits" style={styles.link}>Commits</Link>
+        <Link to="/type-distribution" style={styles.link}>Type Dist</Link>
+        <Link to="/commit-explanation" style={styles.link}>Explain Commit</Link>
       </div>
     </div>
   );

@@ -7,7 +7,12 @@ class SemanticCommitClassifier:
 
     def __init__(self):
         # Load embedding model
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        try:
+            self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        except Exception:
+            import warnings
+            warnings.warn("Network unavailable. Loading SentenceTransformer from local cache.")
+            self.model = SentenceTransformer('all-MiniLM-L6-v2', local_files_only=True)
 
         # Categories with better coverage (IMPORTANT)
         self.categories = {

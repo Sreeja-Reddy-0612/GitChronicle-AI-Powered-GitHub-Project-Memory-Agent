@@ -4,7 +4,8 @@ from app.services.commit_processor import CommitProcessor
 from app.services.semantic_commit_classifier import SemanticCommitClassifier
 from app.services.repo_intelligence import RepoIntelligence
 from app.services.phase_builder import PhaseBuilder
-from app.services.llm_code_insight_engine import LLMCodeInsightEngine
+from app.utils.vector_store import JSONVectorStore
+import concurrent.futures
 
 
 class RepoAnalyzer:
@@ -15,75 +16,54 @@ class RepoAnalyzer:
         self.commit_processor = CommitProcessor()
         self.commit_classifier = SemanticCommitClassifier()
 
-        # 🔥 PHASE 12
-        self.code_insight_engine = LLMCodeInsightEngine()
-
         self.repo_intelligence = RepoIntelligence()
         self.phase_builder = PhaseBuilder()
-
-    def _attach_patch_data(self, owner, repo, commits):
-        import requests
-
-        for commit in commits:
-            sha = commit.get("sha")
-            if not sha:
-                continue
-
-            url = f"https://api.github.com/repos/{owner}/{repo}/commits/{sha}"
-            res = requests.get(url, headers=self.github_client.headers)
-
-            if res.status_code != 200:
-                print("❌ Failed to fetch commit:", sha)
-                continue
-
-            data = res.json()
-            files = []
-
-            for f in data.get("files", []):
-                patch = f.get("patch", "")
-
-                # 🔥 DEBUG PATCH
-                if patch:
-                    print("PATCH SAMPLE:", patch[:100])
-
-                files.append({
-                    "filename": f.get("filename"),
-                    "patch": patch,
-                    "changes": f.get("changes", 0)
-                })
-
-            commit["files"] = files
-
-        return commits
 
     def analyze_repository(self, repo_url):
 
         owner, repo = parse_repo_url(repo_url)
 
-        # 1. Fetch commits
-        commits = self.github_client.get_commits(owner, repo)
+        raw_commits = self.github_client.get_commits(owner, repo)
 
-        # 2. Attach patch FIRST (CRITICAL)
-        commits = self._attach_patch_data(owner, repo, commits)
+        def fetch_commit_details(c):
+            sha = c.get("sha")
+            try:
+                details = self.github_client.get_commit_details(owner, repo, sha)
+                files = details.get("files", [])
+                
+                # Enrich each file with its FULL content at this commit
+                enriched_files = []
+                for f in files:
+                    filename = f.get("filename")
+                    # We fetch the full content using the SHA as ref
+                    full_content = self.github_client.get_file_content(owner, repo, filename, ref=sha)
+                    enriched_files.append({
+                        "filename": filename,
+                        "patch": f.get("patch", ""),
+                        "changes": f.get("changes", 0),
+                        "full_content": full_content
+                    })
+                c["files"] = enriched_files
+            except Exception as e:
+                print(f"Error fetching details for commit {sha[:7]}: {e}")
+            return c
 
-        # 3. Process commits (extract message, author)
-        commits = self.commit_processor.process_commits(commits)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            detailed_commits = list(executor.map(fetch_commit_details, raw_commits))
 
-        # 4. Classify commits
+        commits = self.commit_processor.process_commits(detailed_commits)
+        
+        # Build Vector DB in background (safely catch errors)
+        try:
+            vector_db = JSONVectorStore()
+            vector_db.build_and_save(owner, repo, detailed_commits)
+        except Exception as e:
+            print(f"Failed to build Vector DB: {e}")
+
         commits = self.commit_classifier.classify_commits(commits)
 
-        # 5. 🔥 Phase 12 LLM Insights
-        commits = self.code_insight_engine.process_commits(commits)
-
-        # 6. Remove patch (optional, AFTER LLM)
-        for commit in commits:
-            for file in commit.get("files", []):
-                file.pop("patch", None)
-
-        # 7. Repo insights
         insights = self.repo_intelligence.generate_insights(commits)
 
-        # 8. Phases
         phases = self.phase_builder.build_phases(commits)
 
         return {
