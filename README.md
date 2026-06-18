@@ -152,8 +152,9 @@ Example output:
  ],
  "type": "feature"
 }
+```
 Project Structure
-
+```
 GitChronicle
 │
 ├── artifacts
@@ -174,7 +175,7 @@ GitChronicle
 │
 ├── README.md
 └── .gitignore
-
+```
 Backend Architecture
 
 The backend follows a service-oriented architecture.
